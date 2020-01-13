@@ -33,6 +33,10 @@ app.use('/public',static(path.join(__dirname,'public')));
 //cookie-parser 설정
 app.use(cookieParser());
 
+//view엔진 설정
+app.set('view engine', 'ejs');
+app.engine('html',require('ejs').renderFile);
+
 //세션 설정
 app.use(expressSession({
     secret:'my key',
@@ -73,6 +77,8 @@ var router = express.Router();
 //라우터 객체 등록
 app.use('/',router);
 
+
+
 //인덱스 페이지 라우팅
 app.get('/',function(req,res){
     res.redirect('/public/index.html');
@@ -95,9 +101,12 @@ app.post('/process/login',function(req,res){
             if(docs){
                 console.dir(docs);
 
+                console.log('-----------------')
                 //조회 결과에서 사용자 이름 확인
                 var username = docs[0].name;
-                res.render('main.html');
+                res.render('main');
+                //res.end();
+                
             }else{
                 console.log('조회된 레코드가 없음');
                 console.log('index.html페이지로 이동');
@@ -134,7 +143,8 @@ app.post('/process/signup',function(req,res){
             // 결과 객체 확인하여 추가된 데이터 있으면 성공 응답 전송
             if(result && result.insertedCount > 0){
                 console.dir(result);
-                res.render('/public/main.html');
+                res.render('main');
+                //res.end();
             }else{// 결과 객체가 없으면 실패 응답 전송
                 console.log('사용자 추가 실패');
                 res.redirect('/public/index.html');
@@ -146,6 +156,7 @@ app.post('/process/signup',function(req,res){
     }
 })
 
+
 //========== 각종 함수 ============//
 
 //사용자 인증 함수
@@ -156,7 +167,7 @@ var authUser = function(database,id,password,callback){
     var users = database.collection('users');
 
     // 아이디와 비밀번호를 이용해 검색
-    users.find([{"id":id,"password":password}]).toArray(function(err,docs){
+    users.find({"id":id,"password":password}).toArray(function(err,docs){
         if(err){//에러 발생 시 콜백 함수를 호출하면서 에러 객체 전달
             callback(err,null);
             return;
